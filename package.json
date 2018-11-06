@@ -4,6 +4,7 @@
   "description": "Predicate dictionary for value selection with complex conditions",
   "main": "index.js",
   "scripts": {
+    "build-readme": "node ./node_modules/booklisp ./readmeSource/readme.md ./README.md",
     "test": "node ./node_modules/mocha/bin/mocha ./tests/**/*.test.js"
   },
   "repository": {
@@ -17,6 +18,7 @@
   },
   "homepage": "https://github.com/cmstead/predicary#readme",
   "devDependencies": {
+    "booklisp": "^1.4.0",
     "chai": "^4.2.0",
     "mocha": "^5.2.0"
   }

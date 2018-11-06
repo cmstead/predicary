@@ -1,69 +1,70 @@
 'use strict';
 
+const {
+    throwDefaultError,
+    throwOnReassignment
+} = require('./dependencies/errorHandlers');
+
+function buildPredicaryBase(defaultCase) {
+    return function () {
+        return defaultCase.action()
+    }
+}
+
+function deferredIdentity(value) {
+    return function () {
+        return value;
+    }
+}
+
+const alwaysTrue = deferredIdentity(true);
+
 function newPredicary() {
     let registeredPredicates = {};
-    let defaultCase = () => undefined;
-    let valuePredicary = () => defaultCase();
+    let defaultCase = {
+        action: throwDefaultError
+    };
 
+    let valuePredicary = buildPredicaryBase(defaultCase);
     let predicaryApi = {};
 
-    function throwError(message) {
-        throw new Error(message);
-    }
-
-    function noop() { }
-
-    function throwOnUnmatchable(matchingRecord) {
-        const errorMessage = 'Unable to match record, please set a default.';
-
-        const matchNotFound = typeof matchingRecord === 'undefined';
-
-        (!matchNotFound ? noop : throwError)(errorMessage);
-    }
-
-    function match(testValue) {
-        const matchingValue = valuePredicary(testValue);
-
-        throwOnUnmatchable(matchingValue);
-
-        return matchingValue;
-    }
-
-    function throwOnReassignment(functionString) {
-        const errorMessage = 'Cannot reassign existing key/value pair.';
-
-        const isReregistration = registeredPredicates[functionString];
-        const errorAction = !isReregistration ? noop : throwError;
-
-        errorAction(errorMessage);
-    }
-
-    function setPredicateRegistration(predicateFunctionKey) {
-        const functionString = predicateFunctionKey.toString();
-
-        throwOnReassignment(functionString);
+    function setPredicateRegistration(functionString) {
+        throwOnReassignment(registeredPredicates, functionString);
 
         registeredPredicates[functionString] = true;
     }
 
-    function attachPredicaryRecord(predicateFunctionKey, value) {
-        return function (testValue) {
-            return predicateFunctionKey(testValue)
-                ? value
-                : valuePredicary(testValue);
-        }
+    function setPredicaryRecord(predicateFunctionKey, value) {
+        const currentPredicary = valuePredicary;
+        const deferredValue = deferredIdentity(value);
+
+        valuePredicary = function (testValue) {
+            const isMatchingValue = predicateFunctionKey(testValue);
+
+            return (isMatchingValue ? deferredValue : currentPredicary)(testValue);
+        };
     }
 
     function set(predicateFunctionKey, value) {
-        setPredicateRegistration(predicateFunctionKey);
-
-        valuePredicary = attachPredicaryRecord(predicateFunctionKey, value);
+        setPredicateRegistration(predicateFunctionKey.toString());
+        setPredicaryRecord(predicateFunctionKey, value);
 
         return predicaryApi;
     }
 
+    function setDefaultAction(value) {
+        defaultCase.action = deferredIdentity(value);
+    }
+
     function setDefault(value) {
-        return set(function () { return true; }, value);
+        setPredicateRegistration(alwaysTrue.toString());
+        setDefaultAction(value);
+
+        return predicaryApi;
+    }
+
+    function match(testValue) {
+        return valuePredicary(testValue);
     }
 
     predicaryApi.default = setDefault;

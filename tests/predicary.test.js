@@ -44,7 +44,7 @@ describe('predicary', function () {
             testPredicary
                 .set(x => false, 'A Test Value')
                 .default('This is a default value');
-                
+
             const result = testPredicary.match('always false');
 
             assert.equal(result, 'This is a default value');
@@ -69,6 +69,13 @@ describe('predicary', function () {
             const result = testPredicary.set(value => typeof value === 'string', 'It was a string!');
 
             assert.equal(result, testPredicary);
+        });
+
+        it('throws an error if attempting to set a key which already exists', function () {
+            const isTrue = () => true;
+            testPredicary.set(isTrue, 'foo');
+
+            assert.throws(() => testPredicary.set(isTrue, 'bar'));
         });
     });
 });
