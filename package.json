@@ -1,0 +1,23 @@
+{
+  "name": "predicary",
+  "version": "1.0.0",
+  "description": "Predicate dictionary for value selection with complex conditions",
+  "main": "index.js",
+  "scripts": {
+    "test": "node ./node_modules/mocha/bin/mocha ./tests/**/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cmstead/predicary.git"
+  },
+  "author": "Chris Stead",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cmstead/predicary/issues"
+  },
+  "homepage": "https://github.com/cmstead/predicary#readme",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0"
+  }
+}
